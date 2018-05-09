@@ -1,7 +1,6 @@
 require_relative './app_helper.rb'
 
 class Spy
-
   attr_reader :target, :date_from, :date_to, :api_client
 
   def initialize(target: github_user, from: date, to: date, client: Octokit::Client)
@@ -31,5 +30,13 @@ class Spy
     Dir.chdir("./#{target}")
     ruby_repo_names_and_urls.each { |repo| Git.clone(repo[:ssh_url], repo[:name]) }
     Dir.chdir('..')
+  end
+
+  def analyse_ruby_repos
+    # warning about ruby syntax for the analyser
+    ruby_repo_names_and_urls.map do |hash|
+      analysis = `rubycritic --no-browser -f console "./#{target}/#{hash[:name]}"`
+      analysis[/Score: (\d*.\d*)/, 1].to_f
+    end
   end
 end

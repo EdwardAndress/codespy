@@ -97,4 +97,18 @@ RSpec.describe Spy do
       end
     end
   end
+
+  describe '#analyse_ruby_repos' do
+    it 'makes a system call to rubycritic fo each listed repo' do
+      expect(subject).to receive(:`).with("rubycritic --no-browser -f console \"./EdwardAndress/ruby\"")
+        .and_return("Some dummy text which contains Score: 95.01")
+      subject.analyse_ruby_repos
+    end
+
+    it 'returns the scores as an array' do
+      allow(subject).to receive(:`).with("rubycritic --no-browser -f console \"./EdwardAndress/ruby\"")
+        .and_return("Some dummy text which contains Score: 95.01")
+      expect(subject.analyse_ruby_repos).to eq([95.01])
+    end
+  end
 end

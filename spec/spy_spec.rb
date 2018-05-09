@@ -74,15 +74,27 @@ RSpec.describe Spy do
     end
   end
 
-  describe '#ruby_repo_urls' do
-    it 'returns the urls of repos to clone' do
-      expect(subject.ruby_repo_urls)
-        .to eq ['git@github.com:EdwardAndress/rb_repo.git']
+  describe '#ruby_repo_names_and_urls' do
+    it 'returns the names and urls of repos to clone' do
+      expect(subject.ruby_repo_names_and_urls)
+        .to eq [{:name=>"ruby", :ssh_url=>"git@github.com:EdwardAndress/rb_repo.git"}]
     end
   end
 
   describe '#clone_ruby_repos' do
-    it '#creates a new directory named after the target' do
+    it 'delegates to Git' do
+      MemFs.activate do
+        expect(Git).to receive(:clone).with(rb_repo.ssh_url, rb_repo.name)
+        subject.clone_ruby_repos
+      end
+    end
+
+    it 'creates a new directory using the target name' do
+      MemFs.activate do
+        allow(Git).to receive(:clone).with(rb_repo.ssh_url, rb_repo.name)
+        subject.clone_ruby_repos
+        expect(Dir.exists?('./EdwardAndress')).to eq true
+      end
     end
   end
 end

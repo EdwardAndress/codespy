@@ -22,7 +22,14 @@ class Spy
     repos.select { |repo| repo.language == 'Ruby' }
   end
 
-  def ruby_repo_urls
-    ruby_repos.map(&:ssh_url)
+  def ruby_repo_names_and_urls
+    ruby_repos.map{ |repo| { name: repo.name, ssh_url: repo.ssh_url } }
+  end
+
+  def clone_ruby_repos
+    Dir.mkdir("./#{target}")
+    Dir.chdir("./#{target}")
+    ruby_repo_names_and_urls.each { |repo| Git.clone(repo[:ssh_url], repo[:name]) }
+    Dir.chdir('..')
   end
 end

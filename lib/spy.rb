@@ -32,11 +32,14 @@ class Spy
     Dir.chdir('..')
   end
 
-  def analyse_ruby_repos
+  def report
+    # add a cleanup method
     # warning about ruby syntax for the analyser
-    ruby_repo_names_and_urls.map do |hash|
+    scores = ruby_repo_names_and_urls.map do |hash|
       analysis = `rubycritic --no-browser -f console "./#{target}/#{hash[:name]}"`
       analysis[/Score: (\d*.\d*)/, 1].to_f
     end
+
+    { target => scores }
   end
 end

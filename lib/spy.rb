@@ -3,10 +3,10 @@ require_relative './app_helper.rb'
 class Spy
   attr_reader :target, :date_from, :date_to, :api_client
 
-  def initialize(target: github_user, from: date, to: date, client: Octokit::Client)
+  def initialize(target: github_user, from: nil, to: nil, client: Octokit::Client)
     @target     = target
-    @date_from  = Date.strptime(from, '%Y-%m-%d')
-    @date_to    = Date.strptime(to, '%Y-%m-%d')
+    @date_from  = from
+    @date_to    = to
     @api_client = client.new(
       access_token: ENV['GITHUB_API_TOKEN'],
       per_page: 100
@@ -14,7 +14,18 @@ class Spy
   end
 
   def repos
-    api_client.repos({user: target}, query: {type: 'owner'})
+    repos = api_client.repos({user: target}, query: {type: 'owner'})
+    filter_by_date(repos) if filter_dates_given? else repos
+  end
+
+  def filter_dates_given?
+    !date_from.nil? && !date_to.nil?
+  end
+
+  def filter_by_date(repos)
+    repos.select! do |repo|
+      repo.created_at >= date_from && repo.created_at < date_to
+    end
   end
 
   def ruby_repos

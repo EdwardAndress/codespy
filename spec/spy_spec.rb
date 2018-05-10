@@ -7,7 +7,8 @@ RSpec.describe Spy do
     id: 1,
     name: 'ruby',
     language: 'Ruby',
-    ssh_url: 'git@github.com:EdwardAndress/rb_repo.git'
+    ssh_url: 'git@github.com:EdwardAndress/rb_repo.git',
+    created_at: Time.new(2015, 01, 01)
   end
 
   let(:js_repo) do
@@ -15,39 +16,30 @@ RSpec.describe Spy do
     id: 2,
     name: 'js',
     language: 'Javascript',
-    ssh_url: 'git@github.com:EdwardAndress/js_repo.git'
+    ssh_url: 'git@github.com:EdwardAndress/js_repo.git',
+    created_at: Time.new(2015, 02, 01)
   end
 
-  let(:mock_response) { [rb_repo, js_repo] }
-  let(:ruby_repos)    { [rb_repo] }
-  let(:client_class)  { double 'Octokit::ClientClass', new: api_client}
-  let(:api_client)    { double 'Octokit::Client', repos: mock_response}
+  let(:js_repo2) do
+    double 'Resource',
+    id: 2,
+    name: 'js',
+    language: 'Javascript',
+    ssh_url: 'git@github.com:EdwardAndress/js_repo.git',
+    created_at: Time.new(2015, 03, 20)
+  end
+
+  let(:all_repos)           { [rb_repo, js_repo, js_repo2] }
+  let(:date_filtered_repos) { [rb_repo, js_repo]  }
+  let(:ruby_repos)          { [rb_repo] }
+  let(:client_class)        { double 'Octokit::ClientClass', new: api_client}
+  let(:api_client)          { double 'Octokit::Client', repos: all_repos}
 
   subject do
     described_class.new(
       target: 'EdwardAndress',
-      from: '2015-01-01',
-      to: '2016-01-01',
       client: client_class
     )
-  end
-
-  describe '#target' do
-    it 'returns the github ID of the chosen target' do
-      expect(subject.target).to eq 'EdwardAndress'
-    end
-  end
-
-  describe '#date_from' do
-    it 'returns a Date object corresponding to the start of a period of interest' do
-      expect(subject.date_from).to eq Date.strptime('2015-01-01', '%Y-%m-%d')
-    end
-  end
-
-  describe '#date_to' do
-    it 'returns a Date object corresponding to the end of a period of interest' do
-      expect(subject.date_to).to eq Date.strptime('2016-01-01', '%Y-%m-%d')
-    end
   end
 
   describe '#api_client' do
@@ -63,8 +55,17 @@ RSpec.describe Spy do
       subject.repos
     end
 
-    it "returns a list of the user's repos" do
-      expect(subject.repos).to eq mock_response
+    context 'with no filter dates' do
+      it "returns a list of all the user's repos" do
+        expect(subject.repos).to eq all_repos
+      end
+    end
+
+    context 'with filter dates' do
+      subject { Spy.new(target: "EdwardAndress", from: Time.new(2015,01,01), to: Time.new(2015,03,01), client: client_class)}
+      it 'returns repos created between the filter dates' do
+        expect(subject.repos).to eq date_filtered_repos
+      end
     end
   end
 

@@ -15,7 +15,11 @@ class Spy
 
   def repos
     repos = api_client.repos({user: target}, query: {type: 'owner'})
-    filter_by_date(repos) if filter_dates_given? else repos
+    if filter_dates_given?
+      filter_by_date(repos)
+    else
+      repos
+    end
   end
 
   def filter_dates_given?
@@ -45,13 +49,16 @@ class Spy
 
   def report
     clone_ruby_repos
-    # add a cleanup method
     # warning about ruby syntax for the analyser
     scores = ruby_repo_names_and_urls.map do |hash|
       analysis = `rubycritic --no-browser -f console "./#{target}/#{hash[:name]}"`
       analysis[/Score: (\d*.\d*)/, 1].to_f
     end
-
+    remove_repos
     { target => scores }
+  end
+
+  def remove_repos
+    `rm -rf "./#{target}"`
   end
 end

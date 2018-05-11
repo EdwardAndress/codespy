@@ -100,13 +100,17 @@ RSpec.describe Spy do
   end
 
   describe '#report' do
+
+
     it 'makes a system call to rubycritic fo each listed repo' do
+      allow(Git).to receive(:clone).with(rb_repo.ssh_url, rb_repo.name)
       expect(subject).to receive(:`).with("rubycritic --no-browser -f console \"./EdwardAndress/ruby\"")
         .and_return("Some dummy text which contains Score: 95.01")
       subject.report
     end
 
     it 'returns the scores as an array' do
+      allow(Git).to receive(:clone).with(rb_repo.ssh_url, rb_repo.name)
       allow(subject).to receive(:`).with("rubycritic --no-browser -f console \"./EdwardAndress/ruby\"")
         .and_return("Some dummy text which contains Score: 95.01")
       expect(subject.report).to eq({"EdwardAndress" => [95.01]})

@@ -1,7 +1,7 @@
 class Mission
   attr_reader :targets
 
-  def initialize(targets: users, spy: Spy, from: date, to: date)
+  def initialize(targets: users, spy: Spy, from: nil, to: nil)
     @targets = targets
     @spy = spy
     @date_from  = from

@@ -44,6 +44,7 @@ class Spy
   end
 
   def report
+    clone_ruby_repos
     # add a cleanup method
     # warning about ruby syntax for the analyser
     scores = ruby_repo_names_and_urls.map do |hash|

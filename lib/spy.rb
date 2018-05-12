@@ -14,7 +14,7 @@ class Spy
   end
 
   def all_repos
-    api_client.repos({user: target}, query: {type: 'owner'})
+    api_client.repos(user= target, query: {type: 'owner'})
   end
 
   def ruby_repos

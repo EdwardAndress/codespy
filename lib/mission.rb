@@ -8,6 +8,7 @@ class Mission
   end
 
   def report
+    p 'mission reporting'
     data = targets.map do |target_hash|
       spy = @spy_class.new(target: target_hash, duration: duration)
       scores = spy.report.values.flatten

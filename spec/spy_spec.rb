@@ -50,7 +50,7 @@ RSpec.describe Spy do
   describe '#all_repos' do
     it "delegates to the client, passing target and items per page args" do
       expect(subject.api_client).to receive(:repos)
-        .with({user: 'EdwardAndress'}, query: { type: 'owner' })
+        .with(user = 'EdwardAndress', query: { type: 'owner' })
       subject.all_repos
     end
 

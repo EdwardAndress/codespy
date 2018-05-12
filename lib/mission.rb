@@ -1,19 +1,19 @@
 class Mission
   attr_reader :targets
 
-  def initialize(targets: users, spy: Spy, from: nil, to: nil)
-    @targets = targets
-    @spy = spy
-    @date_from  = from
-    @date_to    = to
+  def initialize(targets: users, spy: Spy, start: nil, duration: nil)
+    @targets    = targets
+    @spy        = spy
+    @start_date = Time.strptime(start, "%Y-%m-%d")
+    @duration   = duration
   end
 
   def report
     header = ['GitHub ID', 'Mean', 'Median', 'Repos']
     data = targets.map do |target|
-      spy = @spy.new(target: target, from: @date_from, to: @date_to)
+      end_date = @start_date.nil? ? nil : @start_date + @duration.days
+      spy = @spy.new(target: target, from: @start_date, to: end_date)
       scores = spy.report.values.flatten
-
       [ target, mean(scores), median(scores), scores.length ]
     end
 

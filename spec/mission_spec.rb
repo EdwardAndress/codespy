@@ -7,8 +7,8 @@ RSpec.describe Mission do
   subject do
     described_class.new(
       targets:['EdwardAndress', 'AndressEdward'],
-      from: '2015-01-01',
-      to: '2016-01-01',
+      start: '2015-01-01',
+      duration: 60,
       spy: spyclass
     )
   end

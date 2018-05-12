@@ -2,26 +2,23 @@ require_relative '../lib/mission.rb'
 
 RSpec.describe Mission do
 
-  let(:spyclass) { double 'Spy', new: spy }
-  let(:spy)      { double 'spy', report: {"EdwardAndress" => [40.00, 70.00, 90.00, 100.00]} }
+  let(:spyclass) { double 'SpyClass', new: spy }
+  let(:spy)      { double 'Spy', report: {"EdwardAndress" => [40.00, 70.00, 90.00, 100.00]} }
   subject do
     described_class.new(
-      targets:['EdwardAndress', 'AndressEdward'],
-      start: '2015-01-01',
+      targets:[
+        {id: 'EdwardAndress', start_date: '2015-01-31'},
+        {id: 'AndressEdward', start_date: '2015-01-31'}
+      ],
       duration: 60,
-      spy: spyclass
+      spy_class: spyclass
     )
-  end
-
-  describe '#targets' do
-    it 'returns the list of targets' do
-      expect(subject.targets).to eq ['EdwardAndress', 'AndressEdward']
-    end
   end
 
   describe '#report' do
     it 'iterates through targets and creates a spy for each one' do
-      expect(spyclass).to receive(:new).exactly(2).times
+      expect(spyclass).to receive(:new).with(target: {id: 'EdwardAndress', start_date: '2015-01-31'}, duration: 60)
+      expect(spyclass).to receive(:new).with(target: {id: 'AndressEdward', start_date: '2015-01-31'}, duration: 60)
       subject.report
     end
 

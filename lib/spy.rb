@@ -1,38 +1,38 @@
 require_relative './app_helper.rb'
 
 class Spy
-  attr_reader :target, :date_from, :date_to, :api_client
+  attr_reader :target, :start_date, :duration, :api_client
 
-  def initialize(target: github_user, from: nil, to: nil, client: Octokit::Client)
-    @target     = target
-    @date_from  = from
-    @date_to    = to
+  def initialize(target: target_hash, duration: nil, client: Octokit::Client)
+    @target     = target[:id]
+    @start_date = format_time(target[:start_date]) if target[:start_date]
+    @duration   = duration
     @api_client = client.new(
       access_token: ENV['GITHUB_API_TOKEN'],
       per_page: 100
     )
   end
 
-  def repos
-    repos = api_client.repos({user: target}, query: {type: 'owner'})
-    if filter_dates_given?
-      filter_by_date(repos)
-    else
-      repos
-    end
+  def format_time(date_string)
+    Time.strptime(date_string, "%Y-%m-%d")
   end
 
-  def filter_dates_given?
-    !date_from.nil? && !date_to.nil?
+  def all_repos
+    api_client.repos({user: target}, query: {type: 'owner'})
   end
 
-  def filter_by_date(repos)
-    repos.select! do |repo|
-      repo.created_at >= date_from && repo.created_at < date_to
+  def date_filter_on?
+    !start_date.nil? && !duration.nil?
+  end
+
+  def date_filtered_repos
+    all_repos.select! do |repo|
+      repo.created_at >= start_date && repo.created_at < start_date + duration.days
     end
   end
 
   def ruby_repos
+    repos = date_filter_on? ? date_filtered_repos : all_repos
     repos.select { |repo| repo.language == 'Ruby' }
   end
 

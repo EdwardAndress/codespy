@@ -13,12 +13,42 @@ class Spy
     )
   end
 
-  def format_time(date_string)
-    Time.strptime(date_string, "%Y-%m-%d")
-  end
-
   def all_repos
     api_client.repos({user: target}, query: {type: 'owner'})
+  end
+
+  def ruby_repos
+    repos = date_filter_on? ? date_filtered_repos : all_repos
+    repos.select { |repo| repo.language == 'Ruby' }
+  end
+
+  def clone_ruby_repos
+    Dir.mkdir("./#{target}")
+    Dir.chdir("./#{target}")
+    ruby_repos.each { |repo| Git.clone(repo.ssh_url, repo.name) }
+    Dir.chdir('..')
+  end
+
+  def report
+    clone_ruby_repos
+    # warning about ruby syntax for the analyser
+    scores = ruby_repos.map do |repo|
+      analysis = `rubycritic --no-browser -f console "./#{target}/#{repo.name}"`
+      analysis[/Score: (\d*.\d*)/, 1].to_f
+    end
+    remove_repos
+    { target => scores }
+  end
+
+
+  private
+
+  def remove_repos
+    `rm -rf "./#{target}"`
+  end
+
+  def format_time(date_string)
+    Time.strptime(date_string, "%Y-%m-%d")
   end
 
   def date_filter_on?
@@ -29,36 +59,5 @@ class Spy
     all_repos.select! do |repo|
       repo.created_at >= start_date && repo.created_at < start_date + duration.days
     end
-  end
-
-  def ruby_repos
-    repos = date_filter_on? ? date_filtered_repos : all_repos
-    repos.select { |repo| repo.language == 'Ruby' }
-  end
-
-  def ruby_repo_names_and_urls
-    ruby_repos.map{ |repo| { name: repo.name, ssh_url: repo.ssh_url } }
-  end
-
-  def clone_ruby_repos
-    Dir.mkdir("./#{target}")
-    Dir.chdir("./#{target}")
-    ruby_repo_names_and_urls.each { |repo| Git.clone(repo[:ssh_url], repo[:name]) }
-    Dir.chdir('..')
-  end
-
-  def report
-    clone_ruby_repos
-    # warning about ruby syntax for the analyser
-    scores = ruby_repo_names_and_urls.map do |hash|
-      analysis = `rubycritic --no-browser -f console "./#{target}/#{hash[:name]}"`
-      analysis[/Score: (\d*.\d*)/, 1].to_f
-    end
-    remove_repos
-    { target => scores }
-  end
-
-  def remove_repos
-    `rm -rf "./#{target}"`
   end
 end

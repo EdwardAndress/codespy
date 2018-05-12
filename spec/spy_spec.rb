@@ -42,6 +42,11 @@ RSpec.describe Spy do
     )
   end
 
+  before(:each) do
+    allow(Git).to receive(:clone).with(rb_repo.ssh_url, rb_repo.name)
+    allow(Git).to receive(:clone).with(rb_repo2.ssh_url, rb_repo2.name)
+  end
+
   describe '#all_repos' do
     it "delegates to the client, passing target and items per page args" do
       expect(subject.api_client).to receive(:repos)
@@ -64,10 +69,7 @@ RSpec.describe Spy do
     context 'with filter dates' do
       subject do
         Spy.new(
-          target: {
-            id: "EdwardAndress",
-            start_date: '2015-01-01'
-          },
+          target: {id: "EdwardAndress", start_date: '2015-01-01'},
           duration: 60,
           client: client_class
         )
@@ -76,16 +78,6 @@ RSpec.describe Spy do
       it 'returns repos created between the filter dates' do
         expect(subject.ruby_repos).to eq date_filtered_ruby_repos
       end
-    end
-  end
-
-  describe '#ruby_repo_names_and_urls' do
-    it 'returns the names and urls of repos to clone' do
-      expect(subject.ruby_repo_names_and_urls)
-        .to eq [
-          {:name=>"ruby", :ssh_url=>"git@github.com:EdwardAndress/rb_repo.git"},
-          {:name=>"ruby2", :ssh_url=>"git@github.com:EdwardAndress/rb_repo2.git"}
-        ]
     end
   end
 
@@ -100,8 +92,6 @@ RSpec.describe Spy do
 
     it 'creates a new directory using the target name' do
       MemFs.activate do
-        allow(Git).to receive(:clone).with(rb_repo.ssh_url, rb_repo.name)
-        allow(Git).to receive(:clone).with(rb_repo2.ssh_url, rb_repo2.name)
         subject.clone_ruby_repos
         expect(Dir.exists?('./EdwardAndress')).to eq true
       end
@@ -109,10 +99,12 @@ RSpec.describe Spy do
   end
 
   describe '#report' do
-    it 'makes a system call to rubycritic fo each listed repo' do
-      allow(Git).to receive(:clone).with(rb_repo.ssh_url, rb_repo.name)
-      allow(Git).to receive(:clone).with(rb_repo2.ssh_url, rb_repo2.name)
+
+    before(:each) do
       allow(subject).to receive(:`).with("rm -rf \"./EdwardAndress\"")
+    end
+
+    it 'makes a system call to rubycritic for each listed repo' do
       expect(subject).to receive(:`).with("rubycritic --no-browser -f console \"./EdwardAndress/ruby\"")
         .and_return("Some dummy text which contains Score: 95.01")
       expect(subject).to receive(:`).with("rubycritic --no-browser -f console \"./EdwardAndress/ruby2\"")
@@ -122,15 +114,16 @@ RSpec.describe Spy do
       end
     end
 
+
+    before do
+      allow(subject).to receive(:`).with("rubycritic --no-browser -f console \"./EdwardAndress/ruby\"")
+        .and_return("Some dummy text which contains Score: 95.01")
+      allow(subject).to receive(:`).with("rubycritic --no-browser -f console \"./EdwardAndress/ruby2\"")
+        .and_return("Some dummy text which contains Score: 85.01")
+    end
+
     it 'returns the scores as an array' do
       MemFs.activate do
-        allow(Git).to receive(:clone).with(rb_repo.ssh_url, rb_repo.name)
-        allow(Git).to receive(:clone).with(rb_repo2.ssh_url, rb_repo2.name)
-        allow(subject).to receive(:`).with("rm -rf \"./EdwardAndress\"")
-        allow(subject).to receive(:`).with("rubycritic --no-browser -f console \"./EdwardAndress/ruby\"")
-          .and_return("Some dummy text which contains Score: 95.01")
-        allow(subject).to receive(:`).with("rubycritic --no-browser -f console \"./EdwardAndress/ruby2\"")
-          .and_return("Some dummy text which contains Score: 85.01")
         expect(subject.report).to eq({"EdwardAndress" => [95.01, 85.01]})
       end
     end

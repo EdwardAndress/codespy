@@ -22,7 +22,7 @@ class Mission
       begin
       spy = @spy_class.new(target: target_hash, duration: duration)
       scores = spy.report.values.flatten
-      [ target_hash[:id], mean(scores), median(scores), scores.length ]
+      `echo "#{target_hash[:id]}, #{mean(scores)}, #{median(scores)}, #{scores.length}" >> scores.txt`
       rescue => e
         p "Error: #{e} for #{target_hash[:id]} – continuing to next target"
       end

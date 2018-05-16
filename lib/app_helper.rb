@@ -1,5 +1,6 @@
 require 'active_support'
 require 'active_support/core_ext'
+require 'csv'
 require 'date'
 require 'dotenv/load'
 require 'git'

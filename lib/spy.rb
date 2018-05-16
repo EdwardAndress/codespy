@@ -57,7 +57,10 @@ class Spy
 
   def date_filtered_repos
     all_repos.select! do |repo|
-      repo.created_at >= start_date && repo.created_at < start_date + duration.days
+      "start_date: #{start_date}"
+      "end date: #{start_date + duration.days}"
+      "repo created on: #{repo.created_at}"
+      repo.created_at >= start_date && repo.created_at <= (start_date + duration.days)
     end
   end
 end

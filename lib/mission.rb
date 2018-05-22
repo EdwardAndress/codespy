@@ -18,21 +18,22 @@ class Mission
   end
 
   def report
+    application_root = Dir.pwd
+    `echo "#{header}" >> scores.txt`
     data = targets.map do |target_hash|
       begin
       spy = @spy_class.new(target: target_hash, duration: duration)
       scores = spy.report.values.flatten
       `echo "#{target_hash[:id]}, #{mean(scores)}, #{median(scores)}, #{scores.length}" >> scores.txt`
       rescue => e
+        Dir.chdir(application_root)
         p "Error: #{e} for #{target_hash[:id]} – continuing to next target"
       end
     end
-
-    data.prepend(header)
   end
 
   def header
-    ['GitHub ID', 'Mean', 'Median', 'Repos']
+    "GitHub ID, Mean, Median, Repos"
   end
 
   def mean(values)

@@ -23,11 +23,10 @@ RSpec.describe Mission do
     end
 
     it 'returns compiled report' do
-      expect(subject.report).to eq [
-        ['GitHub ID', 'Mean', 'Median', 'Repos' ],
-        ["EdwardAndress", sprintf('%.2f', 75), sprintf('%.2f', 80), 4],
-        ["AndressEdward", sprintf('%.2f', 75), sprintf('%.2f', 80), 4]
-      ]
+      expect(subject).to receive(:`).with('echo "GitHub ID, Mean, Median, Repos" >> scores.txt')
+      expect(subject).to receive(:`).with('echo "EdwardAndress, 75.00, 80.00, 4" >> scores.txt')
+      expect(subject).to receive(:`).with('echo "AndressEdward, 75.00, 80.00, 4" >> scores.txt')
+      subject.report
     end
   end
 

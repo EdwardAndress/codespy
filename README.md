@@ -68,6 +68,8 @@ mission.report
 
 ## How to contribute
 
-1. Get approved as a collaborator
-2. TDD some code
-3. Make a pull request
+1. Get approved as a collaborator.
+2. Have a look at the project board.
+3. If there's no existing ticket for the work you want to do, please create one.
+4. TDD some code and move your ticket accordingly.
+5. Make a pull request.
